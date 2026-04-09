@@ -22,6 +22,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v4
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
@@ -30,8 +31,12 @@ jobs:
       - name: Install Dependencies
         run: cd backend && npm install
 
+      - name: Initialize Database
+        env:
+          PGPASSWORD: 123456
+        run: psql -h localhost -U postgres -d tododb -f database/database.sql
+
       - name: Run Unit Tests
-        # Bước này sẽ FAIL (Red X) cho đến khi Bug #6 được sửa
         run: cd backend && npm test
         env:
           DB_HOST: localhost
