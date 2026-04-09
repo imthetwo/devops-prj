@@ -48,7 +48,6 @@ jobs:
   # 2. Build Docker Image và đẩy lên Docker Hub
   build-and-push:
     needs: test-logic
-    # Chỉ chạy khi code được Push (hoặc Merge) vào nhánh main
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
@@ -65,7 +64,6 @@ jobs:
         with:
           context: ./backend
           push: true
-          # Tự động lấy Username từ Secret để đặt tên Image
           tags: ${{ secrets.DOCKERHUB_USERNAME }}/todo-backend:latest
 
   # 3. Remote vào Server và cập nhật ứng dụng
@@ -78,21 +76,21 @@ jobs:
         uses: appleboy/ssh-action@master
         with:
           host: ${{ secrets.SERVER_IP }}
-          username: root # Bạn hãy đổi thành 'admin' nếu server dùng user admin
+          username: root
           password: ${{ secrets.SERVER_PASSWORD }}
           script: |
-            # Di chuyển vào thư mục dự án trên Server
-            cd ~/devops-prj 
+            # 1. Đi thẳng vào thư mục dự án đã xác định trên server
+            cd /root/devops-project-hcm
 
-            # Cập nhật file docker-compose.yml mới nhất từ Git
+            # 2. Lấy code mới nhất (file docker-compose.yml, v.v.)
             git pull origin main
 
-            # Đăng nhập Docker trên Server bằng Token để có quyền kéo (pull) Image
+            # 3. Đăng nhập Docker trên Server bằng Token
             echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u ${{ secrets.DOCKERHUB_USERNAME }} --password-stdin
 
-            # Kéo bản Image mới nhất vừa build xong về
+            # 4. Kéo bản Image backend mới nhất về
             docker pull ${{ secrets.DOCKERHUB_USERNAME }}/todo-backend:latest
 
-            # Restart hệ thống
+            # 5. Restart hệ thống
             docker-compose down
             docker-compose up -d --build
