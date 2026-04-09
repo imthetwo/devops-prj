@@ -1,4 +1,4 @@
-# Stage 1: Build React app
+# Stage 1: Build (Giữ nguyên như bạn đã viết)
 FROM node:18-alpine AS builder
 WORKDIR /app
 COPY package*.json ./
@@ -6,10 +6,9 @@ RUN npm install
 COPY . .
 RUN npm run build
 
-# Stage 2: Serve tĩnh
-FROM node:18-alpine
-WORKDIR /app
-RUN npm install -g serve
-COPY --from=builder /app/build ./build
-EXPOSE 3000
-CMD ["serve", "-s", "build", "-l", "3000"]
+# Stage 2: Serve với Nginx (Xịn hơn và nhẹ hơn)
+FROM nginx:stable-alpine
+# Copy file đã build vào thư mục mặc định của Nginx
+COPY --from=builder /app/build /usr/share/nginx/html
+EXPOSE 80
+CMD ["nginx", "-g", "daemon off;"]
