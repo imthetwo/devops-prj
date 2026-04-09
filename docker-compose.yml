@@ -1,17 +1,17 @@
 services:
-  # 1. Frontend service
+  # 1. Frontend Service
   frontend:
     build: ./frontend
     ports:
-      - "3000:3000"
+      - "3000:8080"
     depends_on:
       - backend
 
-  # 2. Backend service
+  # 2. Backend Service
   backend:
     build: ./backend
     ports:
-      - "8080:8080"
+      - "8081:8080"
     environment:
       - DB_HOST=postgres
       - DB_PORT=5432
@@ -21,13 +21,8 @@ services:
     depends_on:
       postgres:
         condition: service_healthy
-    healthcheck:
-      test: ["CMD-SHELL", "wget -qO- http://localhost:8080/health || exit 1"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
 
-  # 3. Postgres service
+  # 3. Postgres Service
   postgres:
     image: postgres:15-alpine
     environment:
@@ -35,9 +30,9 @@ services:
       - POSTGRES_PASSWORD=123456
       - POSTGRES_DB=tododb
     ports:
-      - "5432:5432"
+      - "5438:5432"
     volumes:
-      - postgres_data:/var/lib/postgresql/data # Lưu trữ data vĩnh viễn
+      - postgres_data:/var/lib/postgresql/data
       - ./database/database.sql:/docker-entrypoint-initdb.d/database.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres"]
@@ -45,6 +40,6 @@ services:
       timeout: 5s
       retries: 5
 
-# 4. Define named volumes
+# 4. Lưu trữ data Database
 volumes:
   postgres_data:
